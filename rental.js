@@ -1,15 +1,14 @@
 function Rental(data) {
+  this._data = data;
 
-	  this._data = data;
-	
-  
-	Rental.prototype.getDays = function() {
-	  return this._data.days;
+	Rental.prototype.getMovie = function() {
+	  return this._data.movie;
+	}
+
+	Rental.prototype.getDaysRented = function() {
+	  return this._data.daysRented;
 	}
   
-	Rental.prototype.getMovieID = function() {
-	  return this._data.movieID;
-	}
 }
 
 export { Rental };

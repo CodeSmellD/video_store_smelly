@@ -1,81 +1,63 @@
-import { Customer } from './customer';
-
-// mock data
-// const {movies} = require('./movies');
-
-
 function Statement() {
 
-
-}
-
-Statement.prototype.movieFor= function(rental, movies) {
-  return movies[rental.movieID];
-}
-
-Statement.prototype.amountFor= function(r, movies) {
-  let result = 0;
-
-  // determine amount for each movie
-  switch (this.movieFor(r, movies).code) {
-    case 'regular':
-      result = 2;
-      if (r.days > 2) {
-        result += (r.days - 2) * 1.5;
-      }
-      break;
-    case 'new':
-      result = r.days * 3;
-      break;
-    case 'childrens':
-      result = 1.5;
-      if (r.days > 3) {
-        result += (r.days - 3) * 1.5;
-      }
-      break;
+  Statement.prototype.amountFor= function(rental) {
+    let result = 0;
+  
+    switch (rental.getMovie().getPriceCode()) {
+      case 'REGULAR':
+        result += 2;
+        if (rental.getDaysRented() > 2) {
+          result += (rental.getDaysRented() - 2) * 1.5;
+        }
+        break;
+      case 'NEW_RELEASE':
+        result += rental.getDaysRented() * 3;
+        break;
+      case 'CHILDREN':
+        result = 1.5;
+        if (rental.getDaysRented() > 3) {
+          result += (rental.getDaysRented() - 3) * 1.5;
+        }
+        break;
+    }
+    return result;
   }
-  return result;
-}
-
-Statement.prototype.totalAmount= function(customer, movies) {
-  let result = 0;
-  for (let r of customer.rentals) {
-    result += this.amountFor(r, movies);
+  
+  
+  Statement.prototype.totalAmountFor= function(customer) {
+    let result = 0;
+    for (let r of customer.getRentals()) {
+      result += this.amountFor(r);
+    }
+    return result;
   }
-  return result;
-}
-
-Statement.prototype.totalFrequentRenterPoints= function(customer, movies) {
-  let result = 0;
-  for (let r of customer.rentals) {
-    result += this.frequentRenterPointsFor(r, movies);
+  
+  Statement.prototype.totalFrequentRenterPointsFor= function(customer) {
+    let result = 0;
+    for (let r of customer.getRentals()) {
+      result += this.frequentRenterPointsFor(r);
+    }
+    return result;
   }
-  return result;
-}
-
-Statement.prototype.frequentRenterPointsFor= function(r, movies) {
-  // add frequent renter points
-  // add bonus for a two day new release rental
-  return (this.movieFor(r, movies).code === 'new' && r.days > 2) ? 2 : 1;
-}
-
-Statement.prototype.statement= function(customerArgs, movies) {
-
-
-  const customer = new Customer(customerArgs);
-  let result = `Rental Record for ${customer.name}\n`;
-
-  for (let r of customer.rentals) {
-    result += `\t${this.movieFor(r, movies).title}\t${this.amountFor(r, movies)}\n`;
+  
+  Statement.prototype.frequentRenterPointsFor= function(rental) {
+    return (rental.getMovie().getPriceCode() === 'NEW_RELEASE' && rental.getDaysRented() > 2) ? 2 : 1;
+  }
+  
+  Statement.prototype.statement= function(customer) {
+  
+    let result = `Rental Record for ${customer.getName()}\n`;
+  
+    for (let r of customer.getRentals()) {
+      result += `\t${r.getMovie().getTitle()}\t${this.amountFor(r)}\n`;
+    }
+  
+    result += `Amount owed is ${this.totalAmountFor(customer)}\n`;
+    result += `You earned ${this.totalFrequentRenterPointsFor(customer)} frequent renter points\n`;
+  
+    return result;
   }
 
-  // add footer lines
-  result += `Amount owed is ${this.totalAmount(customer, movies)}\n`;
-  result += `You earned ${this.totalFrequentRenterPoints(customer, movies)} frequent renter points\n`;
-
-  return result;
 }
 
 export { Statement };
-// console.log(htmlStatement(customer, movies));
-// console.log(statement(customer, movies));
